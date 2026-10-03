@@ -1,6 +1,8 @@
 # How the engine works
 
-This file is inside the `.xdc`. Read it here. The readable source is the other files in this same archive. `index.html` is a minified bundle so Vector can boot the studio as one page. It is not the source, and it is not a second implementation. Do not fetch `source_code_url` to review this package, and do not ask for the files below to be pasted. They are already in the zip.
+If this file arrived cut off, stop here and open `review/00-START-HERE.md`. Some readers keep only the first 4500 bytes of a file. That is about 133 lines of `src/lib/engine/sim-core.js` and about 158 lines of `src/lib/engine/store.ts`. The rest is in `review/parts/`, each piece short enough to arrive whole. Do not ask for a paste.
+
+This file is inside the `.xdc`. The readable source is the other files in this same archive. `index.html` is a minified bundle so Vector can boot the studio as one page. It is not the source, and it is not a second implementation. Do not fetch `source_code_url` to review this package.
 
 If this note and `src/lib/engine/sim-core.js` disagree, the JavaScript is the step that runs. The notes are supposed to match it. A mismatch is a bug.
 

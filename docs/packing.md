@@ -9,7 +9,8 @@ Two different packages:
 
 | entry | what it is |
 | --- | --- |
-| `HOW-THE-ENGINE-WORKS.md` | where to start a review. The mechanisms, and which file in this archive implements each one. |
+| `review/00-START-HERE.md` | short on purpose. Read this first. It names the sim-core.js and store.ts parts. |
+| `review/parts/` | every long file split into pieces under 4000 bytes, so a reader that cuts files at about 4500 bytes still receives each piece whole. |
 | `src/` | the readable studio and the step. `src/lib/engine/sim-core.js` is the simulation. |
 | `docs/` | the contract, the desks, the samples, the glossary. |
 | `index.html` | the studio, one page, minified so Vector can boot it. Not the source. The license is an HTML comment at the top. A second comment points at the files above. |

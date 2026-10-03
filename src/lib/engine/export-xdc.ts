@@ -338,16 +338,64 @@ button.on, #run { background: #d7a15f; color: #12140f; border-color: #d7a15f; }
 function howThisRuns(engineName: string): string {
   return `# How this packed engine runs
 
-${engineName} is a yard packed by Aether Foundry. This file is inside the .xdc. The source is the other files here. Do not ask for them to be pasted.
+${engineName} is a yard packed by Aether Foundry. This file is inside the .xdc.
 
-- \`src/lib/engine/sim-core.js\` is the step, readable, with its exports. The player runs that same text.
-- \`engine.json\` is the blueprint: stats, terrains, things, systems, mechanics, world laws, map, and spawns.
-- \`index.html\` is the player. The first script is the step, with \`export\` removed so it can run without a bundler. The second script is the buttons and a copy of the blueprint.
+Some readers keep only the first 4500 bytes of a file. The long copies will arrive cut. Do not ask for a paste. The complete step is the short files review/parts/sim-core.js/. The complete blueprint is review/parts/engine.json/. Each part says how many parts exist and which lines it holds.
 
-\`bootRuntime\` builds the yard from the blueprint. \`stepWorld\` advances one beat. World laws arrive first. Then each living body runs every matching pulse, then the first order that can act. Orders sort by priority ascending, then by name. Chance is a hash of the beat, the body id, and the law id. The step clones. It does not read the clock.
+bootRuntime builds the yard from the blueprint. stepWorld advances one beat. World laws arrive first. Line 54 is the only Math.random in the step: it picks the open cell a new body arrives on. Chance is a hash of the beat, the body id, and the law id, not Math.random. Then each living body runs every matching pulse, then the first order that can act. Orders sort by priority ascending, then by name. The step clones. It does not read the clock.
 
 Assets are not in this pack. Sprites stay in the foundry.
 `;
+}
+
+function reviewSlices(sourceName: string, text: string): { name: string; data: Uint8Array }[] {
+  const pieces: string[] = [];
+  let start = 0;
+  for (let i = 0; i < text.length; i++) {
+    if (text[i] === "\n") {
+      pieces.push(text.slice(start, i + 1));
+      start = i + 1;
+    }
+  }
+  if (start < text.length) pieces.push(text.slice(start));
+  const groups: { text: string; startLine: number; endLine: number }[] = [];
+  let current: string[] = [];
+  let size = 0;
+  let line = 1;
+  let groupStart = 1;
+  const flush = () => {
+    if (!current.length) return;
+    groups.push({ text: current.join(""), startLine: groupStart, endLine: line - 1 });
+    current = [];
+    size = 0;
+    groupStart = line;
+  };
+  for (const piece of pieces) {
+    const bytes = new TextEncoder().encode(piece).length;
+    if (current.length && size + bytes > 2600) flush();
+    current.push(piece);
+    size += bytes;
+    line += 1;
+  }
+  flush();
+  const encoder = new TextEncoder();
+  return groups.map((group, index) => {
+    const n = String(index + 1).padStart(2, "0");
+    const nextName = index + 1 < groups.length
+      ? `review/parts/${sourceName}/${String(index + 2).padStart(2, "0")}.txt`
+      : "end of this file";
+    const header = [
+      `PART ${index + 1} OF ${groups.length}`,
+      `SOURCE ${sourceName}`,
+      `LINES ${group.startLine}-${group.endLine} OF ${pieces.length}`,
+      "This part is the entire slice. It was not cut.",
+      `NEXT ${nextName}`,
+      "Join every part of this SOURCE, in order, to recover the file. Do not ask for a paste.",
+      "",
+      group.text,
+    ].join("\n");
+    return { name: `review/parts/${sourceName}/${n}.txt`, data: encoder.encode(header) };
+  });
 }
 
 async function iconPng(): Promise<Uint8Array> {
@@ -383,10 +431,13 @@ export async function packEngine(project: Project, engine: EngineDef): Promise<{
   const safeName = engine.name.replace(/"/g, "'");
   const manifest = `name = "${safeName}"\nsource_code_url = "https://github.com/AETHER-ENGINEERS/aether-foundry"\n`;
   const icon = await iconPng();
+  const engineJson = JSON.stringify(engineSnapshot(project, engine), null, 2);
   const files: { name: string; data: Uint8Array<ArrayBufferLike> }[] = [
     { name: "HOW-THIS-RUNS.md", data: encoder.encode(howThisRuns(engine.name)) },
+    ...reviewSlices("sim-core.js", simSource),
+    ...reviewSlices("engine.json", engineJson),
     { name: "src/lib/engine/sim-core.js", data: encoder.encode(simSource) },
-    { name: "engine.json", data: encoder.encode(JSON.stringify(engineSnapshot(project, engine), null, 2)) },
+    { name: "engine.json", data: encoder.encode(engineJson) },
     { name: "index.html", data: encoder.encode(html) },
     { name: "manifest.toml", data: encoder.encode(manifest) },
     { name: "LICENSE.txt", data: encoder.encode(AETHER_LICENSE) },

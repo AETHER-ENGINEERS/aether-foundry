@@ -39,7 +39,7 @@ The foundry itself:
 
 ## Packaging this directory as a webxdc
 
-Send [aether-foundry.xdc](aether-foundry.xdc) into a Vector chat and open it. It is a stored zip with a classic end-of-central-directory record. `index.html` is the minified studio. The readable source is in the same archive: start at `HOW-THE-ENGINE-WORKS.md`, then `src/lib/engine/sim-core.js` and `docs/`. A reviewer does not need the GitHub URL, and does not need each file pasted.
+Send [aether-foundry.xdc](aether-foundry.xdc) into a Vector chat and open it. It is a stored zip with a classic end-of-central-directory record. `index.html` is the minified studio. A reader that keeps only the first 4500 bytes of a file will see about 133 lines of `sim-core.js` and about 158 lines of `store.ts`. The rest is in `review/parts/`, in short complete pieces. Start at `review/00-START-HERE.md`.
 
 Do not use the repository's Download ZIP button. GitHub wraps the project in a folder and writes a Zip64 archive. Vector's reader answers that with "Could not find EOCD".
 

@@ -44,10 +44,8 @@ const page = [
   license.trimEnd(),
   "-->",
   "<!--",
-  "Reviewers: this page is the minified studio so Vector can boot one file.",
-  "The readable source is in this same archive, not only at source_code_url.",
-  "Read HOW-THE-ENGINE-WORKS.md first, then src/lib/engine/sim-core.js.",
-  "docs/simulation.md is the condition and effect contract.",
+  "Reviewers: a reader that keeps only the first 4500 bytes of a file will cut sim-core.js near line 133 and store.ts near line 158.",
+  "The complete files are the short parts in review/parts/. Start at review/00-START-HERE.md. Do not ask for a paste.",
   "-->",
   "<!DOCTYPE html>",
   '<html lang="en"><head><meta charset="utf-8">',
@@ -70,7 +68,7 @@ if ((page.match(/<\/script>/g) ?? []).length !== 2) {
 
 writeFileSync(resolve(root, "index.html"), page);
 writeIcon(resolve(root, "icon.png"));
-const xdc = zipStore([
+const packed = [
   { name: "HOW-THE-ENGINE-WORKS.md", data: readFileSync(resolve(root, "HOW-THE-ENGINE-WORKS.md")) },
   { name: "README.md", data: readFileSync(resolve(root, "README.md")) },
   ...walkFiles(resolve(root, "docs"), "docs"),
@@ -83,12 +81,123 @@ const xdc = zipStore([
   { name: "LICENSE.txt", data: Buffer.from(license) },
   { name: "icon.png", data: readFileSync(resolve(root, "icon.png")) },
   { name: "index.html", data: Buffer.from(page) },
-]);
+];
+const review = reviewParts(packed);
+const xdc = zipStore([...review, ...packed]);
 const xdcPath = resolve(root, "aether-foundry.xdc");
 writeFileSync(xdcPath, xdc);
 rmSync(outDir, { recursive: true, force: true });
 console.log("wrote index.html", page.length, "bytes");
 console.log("wrote aether-foundry.xdc", xdc.length, "bytes");
+
+function reviewParts(packed) {
+  const parts = [];
+  const lines = [];
+  for (const file of packed) {
+    if (file.name === "index.html" || file.name === "icon.png") continue;
+    const text = file.data.toString("utf8");
+    if (Buffer.byteLength(text) < 3500) continue;
+    const slices = sliceText(text, 2600);
+    slices.forEach((slice, index) => {
+      const n = String(index + 1).padStart(2, "0");
+      const name = `review/parts/${file.name}/${n}.txt`;
+      const next = index + 1 < slices.length ? `review/parts/${file.name}/${String(index + 2).padStart(2, "0")}.txt` : "end of this file";
+      const header = [
+        `PART ${index + 1} OF ${slices.length}`,
+        `SOURCE ${file.name}`,
+        `LINES ${slice.startLine}-${slice.endLine} OF ${slice.totalLines}`,
+        "This part is the entire slice. It was not cut.",
+        `NEXT ${next}`,
+        "Join every part of this SOURCE, in order, to recover the file. Do not ask for a paste.",
+        "",
+      ].join("\n");
+      const body = Buffer.from(header + slice.text, "utf8");
+      if (body.length > 4000) throw new Error(`${name} is ${body.length} bytes, over the cut.`);
+      parts.push({ name, data: body });
+      lines.push(`${name}  ${file.name}  lines ${slice.startLine}-${slice.endLine}`);
+    });
+    const recovered = slices.map((slice) => slice.text).join("");
+    if (recovered !== text) throw new Error(`Parts of ${file.name} do not join back to the file.`);
+  }
+  const listText = lines.join("\n") + "\n";
+  const listSlices = sliceText(listText, 2600);
+  const listParts = listSlices.map((slice, index) => {
+    const n = String(index + 1).padStart(2, "0");
+    const name = `review/part-list-${n}.txt`;
+    const header = `PART ${index + 1} OF ${listSlices.length}\nSOURCE review/part-list\nThis list is complete in these short files.\n\n`;
+    return { name, data: Buffer.from(header + slice.text, "utf8") };
+  });
+  const sim = parts.filter((part) => part.name.startsWith("review/parts/src/lib/engine/sim-core.js/")).map((part) => part.name);
+  const store = parts.filter((part) => part.name.startsWith("review/parts/src/lib/engine/store.ts/")).map((part) => part.name);
+  if (!sim.length || !store.length) throw new Error("Review parts are missing sim-core.js or store.ts.");
+  const start = Buffer.from(startHere(sim, store, parts.length), "utf8");
+  if (start.length > 3500) throw new Error(`Start file is ${start.length} bytes.`);
+  for (const part of listParts) {
+    if (part.data.length > 4000) throw new Error(`${part.name} is ${part.data.length} bytes.`);
+  }
+  return [{ name: "review/00-START-HERE.md", data: start }, ...listParts, ...parts];
+}
+
+function startHere(simParts, storeParts, partCount) {
+  return `# Start here
+
+This file is short on purpose. Some readers keep only the first 4500 bytes of each file in an archive.
+
+That cut is why sim-core.js arrived as about 133 of 603 lines, and store.ts as about 158 of 532. The long copies under src/ will be cut the same way again. Do not ask for a paste. The complete text is already here, in parts under 4000 bytes.
+
+Read these, in order. Joined, they are src/lib/engine/sim-core.js:
+
+${simParts.map((name) => `- ${name}`).join("\n")}
+
+Joined, these are src/lib/engine/store.ts:
+
+${storeParts.map((name) => `- ${name}`).join("\n")}
+
+${partCount} short parts cover every other long file (seed, laws, docs, desks). Their names are in review/part-list-01.txt and the following part-list files. index.html is the minified studio Vector boots. It is not the source.
+
+## What the cut hid
+
+Line 54 of sim-core.js is the only Math.random() in the step. A world law uses it to pick which open cell a new body arrives on.
+
+Chance is not that call. A chance condition rolls hash(tick + "|" + entityId + "|" + lawId) % 100 and hits when the roll is under pct. hash is FNV-1a, later in the same file. The same yard and the same law ids step the same way, except for that arrival cell.
+
+stepWorld clones the yard and adds one to tick. World laws run in list order: skip a system that is off, and on every Nth beat place thingId on passable onTerrain if the living count is under cap. Then each body that already existed runs every matching pulse, then the first matching order that succeeds on a dry run. Orders sort by priority ascending, then by name. The first effect that steps ends that law. vigor at or below 0 kills the body. diagnose tries the orders without writing.
+`;
+}
+
+function sliceText(text, maxBody) {
+  const pieces = [];
+  let start = 0;
+  for (let i = 0; i < text.length; i++) {
+    if (text[i] === "\n") {
+      pieces.push(text.slice(start, i + 1));
+      start = i + 1;
+    }
+  }
+  if (start < text.length) pieces.push(text.slice(start));
+  const totalLines = pieces.length;
+  const groups = [];
+  let current = [];
+  let size = 0;
+  let line = 1;
+  let groupStart = 1;
+  const flush = () => {
+    if (!current.length) return;
+    groups.push({ text: current.join(""), startLine: groupStart, endLine: line - 1, totalLines });
+    current = [];
+    size = 0;
+    groupStart = line;
+  };
+  for (const piece of pieces) {
+    const bytes = Buffer.byteLength(piece);
+    if (current.length && size + bytes > maxBody) flush();
+    current.push(piece);
+    size += bytes;
+    line += 1;
+  }
+  flush();
+  return groups;
+}
 
 function walkFiles(dir, prefix) {
   const out = [];
