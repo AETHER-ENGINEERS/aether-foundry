@@ -34,7 +34,7 @@ export function zipStore(files: { name: string; data: Uint8Array<ArrayBufferLike
     const lv = new DataView(local.buffer);
     u32(lv, 0, 0x04034b50);
     u16(lv, 4, 20);
-    u16(lv, 6, 0x0800);
+    u16(lv, 6, 0);
     u16(lv, 8, 0);
     u16(lv, 10, 0);
     u16(lv, 12, 0);
@@ -50,7 +50,7 @@ export function zipStore(files: { name: string; data: Uint8Array<ArrayBufferLike
     u32(cv, 0, 0x02014b50);
     u16(cv, 4, 20);
     u16(cv, 6, 20);
-    u16(cv, 8, 0x0800);
+    u16(cv, 8, 0);
     u16(cv, 10, 0);
     u16(cv, 12, 0);
     u16(cv, 14, 0);

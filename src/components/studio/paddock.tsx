@@ -1,3 +1,4 @@
+import { useMemo } from "react";
 import { Pause, Play, RotateCcw, SkipForward } from "lucide-react";
 import { activeEngine, useStudio } from "@/lib/engine/store";
 import { Btn, StageHead } from "./ui";
@@ -16,10 +17,13 @@ export function Paddock() {
   const setSelection = useStudio((s) => s.setSelection);
   const engine = activeEngine(project);
   const live = yard.engineId === engine.id ? yard : null;
-  const counts = new Map<string, number>();
-  for (const body of live?.entities ?? []) {
-    if (body.alive) counts.set(body.thingId, (counts.get(body.thingId) ?? 0) + 1);
-  }
+  const counts = useMemo(() => {
+    const next = new Map<string, number>();
+    for (const body of live?.entities ?? []) {
+      if (body.alive) next.set(body.thingId, (next.get(body.thingId) ?? 0) + 1);
+    }
+    return next;
+  }, [live]);
 
   return (
     <div>

@@ -7,7 +7,7 @@
 ## One beat
 
 1. Clone the yard. Increment `tick`.
-2. **World laws**, in list order. Skip a law whose system is off for this engine. If `tick % every === 0` and the living count of `thingId` is under `cap`, pick a random passable cell of `onTerrain` and add a body. Log the arrival.
+2. **World laws**, in list order. Skip a law whose system is off for this engine. If `tick % every === 0` and the living count of `thingId` is under `cap`, place that thing on a passable cell of `onTerrain`. The cell is `hash(tick|lawId|arrive)`, the same FNV-1a hash a chance roll uses, so two copies of the yard arrive in the same place. Log the arrival.
 3. For each body that was already in the list at the start of this loop (a body born this beat does not act yet):
    - If it is dead, skip.
    - Fill any missing stat from the definition. Increment `age`.
@@ -57,7 +57,7 @@ Near and crowd use Chebyshev distance (diagonals count as 1). They do not care w
 | `stat` | add `delta`, then clamp to the stat's min and max. Always succeeds. |
 | `seekThing` | step one cell along a four-way path toward the nearest other body with that tag. The goal cell itself must be passable or the step is refused. |
 | `seekTerrain` | step toward the nearest cell of that terrain, through passable ground. Already standing on it fails. |
-| `digToward` | same, but the path may enter a diggable tile. Entering one excavates it instead of moving. Already standing on the target fails. |
+| `digToward` | step toward the nearest cell of that terrain, through passable ground, and through a diggable tile. Entering a diggable tile excavates it and does not count as a step, so a later effect in the same law still runs. Already standing on the target fails. |
 | `fleeThing` | step to the orthogonal neighbor that most increases distance from the nearest body with that tag, anywhere on the map. No such body, or no better step, fails. |
 | `fleeEdge` | step to a neighbor closer to the border. |
 | `wander` | step to a random passable neighbor. The pick is a hash of tick, body id, and the word `wander`. No neighbor fails. |
@@ -76,7 +76,7 @@ Digging writes the new terrain immediately, so a later law on a later body in th
 
 Two ways, both set `alive` to false:
 
-- `vigor` is at or below 0 after the body's pulses and order. The sample hens start at vigor 30; nothing in the sample lowers vigor unless a law says so.
+- `vigor` is at or below 0 after the body's pulses and order. `vigor` is the reserved key for that check. A project that does not define it never kills a body for being spent, because a missing vigor reads as 1. The sample hens start at vigor 30; nothing in the sample lowers vigor unless a law says so.
 - `removeNearest` or a successful `vanishIf`.
 
 Dead bodies stay in the list so the log and the tallies still make sense. They are not drawn as living, they do not act, and they do not count as near.

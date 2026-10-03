@@ -4,13 +4,18 @@ import type { Asset, TerrainDef, ThingDef, Tone } from "./types";
 const sprites = new Map<string, HTMLImageElement>();
 
 export function warmSprites(assets: Asset[]) {
+  const keep = new Set<string>();
   for (const asset of assets) {
     if (!asset.dataUrl) continue;
+    keep.add(asset.id);
     const prev = sprites.get(asset.id);
     if (prev && prev.src === asset.dataUrl) continue;
     const img = new Image();
     img.src = asset.dataUrl;
     sprites.set(asset.id, img);
+  }
+  for (const id of sprites.keys()) {
+    if (!keep.has(id)) sprites.delete(id);
   }
 }
 

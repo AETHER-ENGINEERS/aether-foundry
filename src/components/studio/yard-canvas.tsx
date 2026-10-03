@@ -29,18 +29,18 @@ export function YardCanvas({
     if (!el) return;
     const measure = () => {
       const width = el.clientWidth;
-      if (!width) return;
+      if (!width || !w || !h) return;
       setCell(Math.max(14, Math.min(34, Math.floor(width / w))));
     };
     measure();
     const observer = new ResizeObserver(measure);
     observer.observe(el);
     return () => observer.disconnect();
-  }, [w]);
+  }, [w, h]);
 
   useEffect(() => {
     const canvas = ref.current;
-    if (!canvas) return;
+    if (!canvas || !w || !h) return;
     const dpr = Math.min(2, window.devicePixelRatio || 1);
     canvas.width = Math.floor(w * cell * dpr);
     canvas.height = Math.floor(h * cell * dpr);

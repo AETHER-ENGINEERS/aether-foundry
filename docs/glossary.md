@@ -76,6 +76,6 @@ Words as this foundry uses them. If the code and this list disagree, the code is
 
 **webxdc.** A zip with `index.html`, `manifest.toml`, and whatever else the app needs. Our pack writes those, plus `LICENSE.txt` and an icon. See [packing.md](packing.md).
 
-**World law.** Not a per-body law. On every Nth beat, if fewer than `cap` living bodies of `thingId` exist, one more is placed on a random passable cell of `onTerrain`. Sample names: Brood, Raid, Kin.
+**World law.** Not a per-body law. On every Nth beat, if fewer than `cap` living bodies of `thingId` exist, one more is placed on a passable cell of `onTerrain`. The cell comes from the same hash as a chance roll (`tick`, the law id, and the word `arrive`). Sample names: Brood, Raid, Kin.
 
 **Yard.** The live simulation state: tick, tiles (which may now differ from the blueprint), bodies, hoard, stolen, left, and a short log. The paddock shows the yard. Reset discards it.

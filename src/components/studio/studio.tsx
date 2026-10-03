@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { Box, Image, Layers, Map, ScrollText, Send, Shapes, Sprout } from "lucide-react";
 import type { Desk } from "@/lib/engine/types";
 import { activeEngine, useStudio } from "@/lib/engine/store";
@@ -38,29 +38,24 @@ export function Studio() {
   const playing = useStudio((s) => s.playing);
   const speed = useStudio((s) => s.speed);
   const tickMs = engine.tickMs;
-  const [vector, setVector] = useState(false);
 
   useEffect(() => {
     const unsub = useStudio.persist.onFinishHydration((state) => {
       if (!state) return;
       const next = activeEngine(state.project);
-      useStudio.setState({ yard: bootRuntime(state.project, next), playing: false });
+      useStudio.setState({ yard: bootRuntime(state.project, next), playing: false, incoming: null });
+      const api = window.webxdc;
+      if (!api) return;
+      api.setUpdateListener((update) => {
+        const payload = update.payload as { type?: string; project?: Project } | null;
+        if (payload?.type === "studio" && payload.project) {
+          useStudio.getState().offerIncoming(payload.project);
+        }
+      }, 0);
     });
     void useStudio.persist.rehydrate();
-    setVector(typeof window.webxdc !== "undefined");
     return () => unsub();
   }, []);
-
-  useEffect(() => {
-    const api = window.webxdc;
-    if (!api) return;
-    api.setUpdateListener((update) => {
-      const payload = update.payload as { type?: string; project?: Project } | null;
-      if (payload?.type === "studio" && payload.project) {
-        useStudio.getState().offerIncoming(payload.project);
-      }
-    }, 0);
-  }, [vector]);
 
   useEffect(() => {
     if (!playing) return;

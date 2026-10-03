@@ -1,4 +1,4 @@
-import { deflateSync, crc32 } from "node:zlib";
+import { deflateSync } from "node:zlib";
 import { readFileSync, writeFileSync, rmSync, readdirSync } from "node:fs";
 import { resolve, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -143,7 +143,7 @@ function startHere(simParts, storeParts, partCount) {
 
 This file is short on purpose. Some readers keep only the first 4500 bytes of each file in an archive.
 
-That cut is why sim-core.js arrived as about 133 of 603 lines, and store.ts as about 158 of 532. The long copies under src/ will be cut the same way again. Do not ask for a paste. The complete text is already here, in parts under 4000 bytes.
+That cut is why sim-core.js arrived as about 133 of 604 lines, and store.ts as about 158 of 533. The long copies under src/ will be cut the same way again. Do not ask for a paste. The complete text is already here, in parts under 4000 bytes.
 
 Read these, in order. Joined, they are src/lib/engine/sim-core.js:
 
@@ -157,9 +157,9 @@ ${partCount} short parts cover every other long file (seed, laws, docs, desks). 
 
 ## What the cut hid
 
-Line 54 of sim-core.js is the only Math.random() in the step. A world law uses it to pick which open cell a new body arrives on.
+Line 54 of sim-core.js chooses the arrival cell with hash(tick|lawId|arrive), the same FNV-1a hash a chance roll uses. Two copies of a yard arrive in the same cell. The step does not draw lots.
 
-Chance is not that call. A chance condition rolls hash(tick + "|" + entityId + "|" + lawId) % 100 and hits when the roll is under pct. hash is FNV-1a, later in the same file. The same yard and the same law ids step the same way, except for that arrival cell.
+Chance rolls hash(tick + "|" + entityId + "|" + lawId) % 100 and hit when the roll is under pct. Digging a closed tile does not count as a step, so a later effect in that law still runs. vigor is the reserved death stat. A project that does not define it never kills a body for being spent.
 
 stepWorld clones the yard and adds one to tick. World laws run in list order: skip a system that is off, and on every Nth beat place thingId on passable onTerrain if the living count is under cap. Then each body that already existed runs every matching pulse, then the first matching order that succeeds on a dry run. Orders sort by priority ascending, then by name. The first effect that steps ends that law. vigor at or below 0 kills the body. diagnose tries the orders without writing.
 `;
@@ -209,6 +209,15 @@ function walkFiles(dir, prefix) {
     else out.push({ name: rel, data: readFileSync(abs) });
   }
   return out;
+}
+
+function crc32(data) {
+  let c = 0xffffffff;
+  for (let i = 0; i < data.length; i++) {
+    c ^= data[i];
+    for (let k = 0; k < 8; k++) c = c & 1 ? 0xedb88320 ^ (c >>> 1) : c >>> 1;
+  }
+  return (c ^ 0xffffffff) >>> 0;
 }
 
 function zipStore(files) {

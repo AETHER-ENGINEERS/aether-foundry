@@ -17,6 +17,12 @@ function runtimeSource(): string {
     .replace(/^\s*\/\/ @ts-nocheck\s*/, "")
     .replace(/^export function /gm, "function ")
     .replace(/^export const /gm, "const ");
+  if (/^\s*export\s/m.test(body)) {
+    throw new Error("sim-core.js has an export the player transform does not strip.");
+  }
+  if (!body.includes("function bootRuntime") || !body.includes("function stepWorld")) {
+    throw new Error("sim-core.js no longer defines bootRuntime and stepWorld.");
+  }
   return `window.Paddock=(function(){\n${body}\nreturn {bootRuntime:bootRuntime,stepWorld:stepWorld};\n})();`;
 }
 
@@ -238,14 +244,29 @@ $("yard").addEventListener("pointerdown", function (event) {
   if (hit && !event.shiftKey) { selected = hit.id; frame(); return; }
   spawnAt(x, y);
 });
+function acceptedYard(next) {
+  if (!next || !Array.isArray(next.tiles) || !Array.isArray(next.entities)) return false;
+  if (typeof next.w !== "number" || typeof next.h !== "number" || next.w < 1 || next.h < 1) return false;
+  if (next.tiles.length !== next.w * next.h) return false;
+  if (!Array.isArray(next.log)) return false;
+  for (var i = 0; i < next.entities.length; i++) if (!next.entities[i] || typeof next.entities[i] !== "object") return false;
+  return true;
+}
+function acceptedSpawn(entity) {
+  if (!entity || typeof entity.id !== "string" || !thingBy(entity.thingId)) return false;
+  if (typeof entity.x !== "number" || typeof entity.y !== "number") return false;
+  if (entity.x < 0 || entity.y < 0 || entity.x >= yard.w || entity.y >= yard.h) return false;
+  if (typeof entity.alive !== "boolean" || !entity.stats || typeof entity.stats !== "object") return false;
+  return true;
+}
 if (window.webxdc) {
   window.webxdc.setUpdateListener(function (update) {
     var payload = update.payload || {};
-    if (payload.type === "yard" && payload.yard && payload.yard.tiles) {
+    if (payload.type === "yard" && acceptedYard(payload.yard)) {
       setPlaying(false);
       yard = payload.yard;
       frame();
-    } else if (payload.type === "spawn" && payload.entity) {
+    } else if (payload.type === "spawn" && acceptedSpawn(payload.entity)) {
       var known = false;
       for (var i = 0; i < yard.entities.length; i++) if (yard.entities[i].id === payload.entity.id) known = true;
       if (!known) {
@@ -342,7 +363,7 @@ ${engineName} is a yard packed by Aether Foundry. This file is inside the .xdc.
 
 Some readers keep only the first 4500 bytes of a file. The long copies will arrive cut. Do not ask for a paste. The complete step is the short files review/parts/sim-core.js/. The complete blueprint is review/parts/engine.json/. Each part says how many parts exist and which lines it holds.
 
-bootRuntime builds the yard from the blueprint. stepWorld advances one beat. World laws arrive first. Line 54 is the only Math.random in the step: it picks the open cell a new body arrives on. Chance is a hash of the beat, the body id, and the law id, not Math.random. Then each living body runs every matching pulse, then the first order that can act. Orders sort by priority ascending, then by name. The step clones. It does not read the clock.
+bootRuntime builds the yard from the blueprint. stepWorld advances one beat. World laws arrive first, on a cell chosen by hash(tick|lawId|arrive), the same hash chance uses. Then each living body runs every matching pulse, then the first order that can act. Orders sort by priority ascending, then by name. Digging a tile is not a step, so a later effect in that same law still runs. The step clones. It does not read the clock.
 
 Assets are not in this pack. Sprites stay in the foundry.
 `;

@@ -51,7 +51,7 @@ export function stepWorld(yard, project, engine) {
       return t && t.passable;
     });
     if (!spots.length) continue;
-    const i = spots[Math.floor(Math.random() * spots.length)];
+    const i = spots[hash(`${draft.tick}|${law.id}|arrive`) % spots.length];
     const thing = thingById(project, law.thingId);
     if (!thing) continue;
     draft.entities.push(
@@ -429,6 +429,7 @@ function moveSeekTerrain(yard, project, entity, terrainId, digging) {
   if (!next) return { ok: false, moved: false };
   const t = terrainAt(project, yard, next.x, next.y);
   if (digging && t && !t.passable && t.diggable) {
+    // Not a step. excavateAt returns moved:false, so later effects in this law still run.
     return excavateAt(yard, project, entity, next.x, next.y, false);
   }
   if (!t || !t.passable) return { ok: false, moved: false };

@@ -520,6 +520,7 @@ export const useStudio = create<StudioState>()(
         const engine = activeEngine(state.project);
         state.yard = bootRuntime(state.project, engine);
         state.playing = false;
+        state.incoming = null;
       },
     },
   ),
