@@ -261,8 +261,8 @@ $("pitch").textContent = engine.pitch || "";
 frame();
 `;
 
-export function renderEngineHtml(project: Project, engine: EngineDef): string {
-  const snapshot = {
+function engineSnapshot(project: Project, engine: EngineDef) {
+  return {
     project: {
       stats: project.stats,
       terrains: project.terrains,
@@ -270,14 +270,22 @@ export function renderEngineHtml(project: Project, engine: EngineDef): string {
       systems: project.systems,
       mechanics: project.mechanics,
       worldLaws: project.worldLaws,
-      assets: [],
+      assets: [] as Project["assets"],
     },
     engine,
   };
+}
+
+export function renderEngineHtml(project: Project, engine: EngineDef): string {
+  const snapshot = engineSnapshot(project, engine);
   const json = JSON.stringify(snapshot).replace(/</g, "\\u003c");
   return [
     "<!--",
     AETHER_LICENSE,
+    "-->",
+    "<!--",
+    "Reviewers: the simulation is the first script on this page, and again as src/lib/engine/sim-core.js in this same archive.",
+    "The blueprint is engine.json. Read HOW-THIS-RUNS.md. Do not ask for these files to be pasted.",
     "-->",
     "<!DOCTYPE html>",
     '<html lang="en"><head><meta charset="utf-8">',
@@ -327,6 +335,21 @@ button.on, #run { background: #d7a15f; color: #12140f; border-color: #d7a15f; }
 #log span { color: #d7a15f; display: inline-block; width: 2.5rem; }
 `;
 
+function howThisRuns(engineName: string): string {
+  return `# How this packed engine runs
+
+${engineName} is a yard packed by Aether Foundry. This file is inside the .xdc. The source is the other files here. Do not ask for them to be pasted.
+
+- \`src/lib/engine/sim-core.js\` is the step, readable, with its exports. The player runs that same text.
+- \`engine.json\` is the blueprint: stats, terrains, things, systems, mechanics, world laws, map, and spawns.
+- \`index.html\` is the player. The first script is the step, with \`export\` removed so it can run without a bundler. The second script is the buttons and a copy of the blueprint.
+
+\`bootRuntime\` builds the yard from the blueprint. \`stepWorld\` advances one beat. World laws arrive first. Then each living body runs every matching pulse, then the first order that can act. Orders sort by priority ascending, then by name. Chance is a hash of the beat, the body id, and the law id. The step clones. It does not read the clock.
+
+Assets are not in this pack. Sprites stay in the foundry.
+`;
+}
+
 async function iconPng(): Promise<Uint8Array> {
   const canvas = document.createElement("canvas");
   canvas.width = 128;
@@ -361,6 +384,9 @@ export async function packEngine(project: Project, engine: EngineDef): Promise<{
   const manifest = `name = "${safeName}"\nsource_code_url = "https://github.com/AETHER-ENGINEERS/aether-foundry"\n`;
   const icon = await iconPng();
   const files: { name: string; data: Uint8Array<ArrayBufferLike> }[] = [
+    { name: "HOW-THIS-RUNS.md", data: encoder.encode(howThisRuns(engine.name)) },
+    { name: "src/lib/engine/sim-core.js", data: encoder.encode(simSource) },
+    { name: "engine.json", data: encoder.encode(JSON.stringify(engineSnapshot(project, engine), null, 2)) },
     { name: "index.html", data: encoder.encode(html) },
     { name: "manifest.toml", data: encoder.encode(manifest) },
     { name: "LICENSE.txt", data: encoder.encode(AETHER_LICENSE) },

@@ -1,5 +1,5 @@
 import { deflateSync, crc32 } from "node:zlib";
-import { readFileSync, writeFileSync, rmSync } from "node:fs";
+import { readFileSync, writeFileSync, rmSync, readdirSync } from "node:fs";
 import { resolve, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 import { build } from "vite";
@@ -43,6 +43,12 @@ const page = [
   "<!--",
   license.trimEnd(),
   "-->",
+  "<!--",
+  "Reviewers: this page is the minified studio so Vector can boot one file.",
+  "The readable source is in this same archive, not only at source_code_url.",
+  "Read HOW-THE-ENGINE-WORKS.md first, then src/lib/engine/sim-core.js.",
+  "docs/simulation.md is the condition and effect contract.",
+  "-->",
   "<!DOCTYPE html>",
   '<html lang="en"><head><meta charset="utf-8">',
   '<meta name="viewport" content="width=device-width, initial-scale=1">',
@@ -65,16 +71,36 @@ if ((page.match(/<\/script>/g) ?? []).length !== 2) {
 writeFileSync(resolve(root, "index.html"), page);
 writeIcon(resolve(root, "icon.png"));
 const xdc = zipStore([
-  { name: "index.html", data: Buffer.from(page) },
+  { name: "HOW-THE-ENGINE-WORKS.md", data: readFileSync(resolve(root, "HOW-THE-ENGINE-WORKS.md")) },
+  { name: "README.md", data: readFileSync(resolve(root, "README.md")) },
+  ...walkFiles(resolve(root, "docs"), "docs"),
+  ...walkFiles(resolve(root, "src/lib/engine"), "src/lib/engine"),
+  ...walkFiles(resolve(root, "src/components/studio"), "src/components/studio"),
+  { name: "src/styles.css", data: readFileSync(resolve(root, "src/styles.css")) },
+  ...walkFiles(resolve(root, "xdc"), "xdc"),
+  { name: "build-xdc.mjs", data: readFileSync(resolve(root, "build-xdc.mjs")) },
   { name: "manifest.toml", data: readFileSync(resolve(root, "manifest.toml")) },
-  { name: "icon.png", data: readFileSync(resolve(root, "icon.png")) },
   { name: "LICENSE.txt", data: Buffer.from(license) },
+  { name: "icon.png", data: readFileSync(resolve(root, "icon.png")) },
+  { name: "index.html", data: Buffer.from(page) },
 ]);
 const xdcPath = resolve(root, "aether-foundry.xdc");
 writeFileSync(xdcPath, xdc);
 rmSync(outDir, { recursive: true, force: true });
 console.log("wrote index.html", page.length, "bytes");
 console.log("wrote aether-foundry.xdc", xdc.length, "bytes");
+
+function walkFiles(dir, prefix) {
+  const out = [];
+  for (const entry of readdirSync(dir, { withFileTypes: true })) {
+    if (entry.name.startsWith(".")) continue;
+    const rel = `${prefix}/${entry.name}`;
+    const abs = resolve(dir, entry.name);
+    if (entry.isDirectory()) out.push(...walkFiles(abs, rel));
+    else out.push({ name: rel, data: readFileSync(abs) });
+  }
+  return out;
+}
 
 function zipStore(files) {
   const locals = [];

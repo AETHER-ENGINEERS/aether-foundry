@@ -9,10 +9,13 @@ Two different packages:
 
 | entry | what it is |
 | --- | --- |
-| `index.html` | the studio, one page. The license text is an HTML comment at the top, before the doctype. |
-| `manifest.toml` | `name` is Aether Foundry. `source_code_url` is this repository. |
+| `HOW-THE-ENGINE-WORKS.md` | where to start a review. The mechanisms, and which file in this archive implements each one. |
+| `src/` | the readable studio and the step. `src/lib/engine/sim-core.js` is the simulation. |
+| `docs/` | the contract, the desks, the samples, the glossary. |
+| `index.html` | the studio, one page, minified so Vector can boot it. Not the source. The license is an HTML comment at the top. A second comment points at the files above. |
+| `manifest.toml` | `name` is Aether Foundry. `source_code_url` is this repository. The source the reviewer needs is already in the archive. |
 | `icon.png` | the brass mark. |
-| `LICENSE` | the same text as the comment. |
+| `LICENSE.txt` | the same text as the comment. |
 
 `webxdc.js` is referenced from `index.html` and is provided by Vector when the file is opened there. It is not stored in the repository. In a normal browser the missing script is a harmless 404, and the desks still run.
 
@@ -24,7 +27,10 @@ Two different packages:
 
 | entry | what it is |
 | --- | --- |
-| `index.html` | the player. The license text is an HTML comment at the top, before the doctype. |
+| `HOW-THIS-RUNS.md` | how the packed yard steps, and where the readable files are in that same archive. |
+| `src/lib/engine/sim-core.js` | the step, unbundled, with its exports. |
+| `engine.json` | the blueprint that was packed. |
+| `index.html` | the player. The license text is an HTML comment at the top, before the doctype. The first script is the same step. |
 | `manifest.toml` | `name` (the engine name) and `source_code_url` (this repository). |
 | `LICENSE.txt` | the same license text as [`LICENSE`](../LICENSE), unaltered. |
 | `icon.png` | a generated brass mark on ink, when the browser can paint a canvas. |

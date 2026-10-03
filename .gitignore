@@ -5,6 +5,7 @@
 !.gitignore
 !LICENSE
 !README.md
+!HOW-THE-ENGINE-WORKS.md
 
 !docs/
 !docs/**

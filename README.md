@@ -29,6 +29,7 @@ The foundry itself:
 - `src/styles.css` — the ink / brass / moss / bone palette the desks use
 - `docs/` — the notes above
 - `LICENSE` — the canonical license text, unaltered
+- `HOW-THE-ENGINE-WORKS.md` — the review map. It ships inside the `.xdc` with the source, so a reader of the archive does not have to open GitHub or paste files.
 - `aether-foundry.xdc` — the file to open in Vector. Do not rename GitHub's Download ZIP; that archive is Zip64 and Vector reports "Could not find EOCD".
 - `manifest.toml` — the webxdc name and source URL
 - `icon.png` — the mark Vector shows for that package
@@ -38,7 +39,7 @@ The foundry itself:
 
 ## Packaging this directory as a webxdc
 
-Send [aether-foundry.xdc](aether-foundry.xdc) into a Vector chat and open it. It is a stored zip: `index.html`, `manifest.toml`, `icon.png`, and `LICENSE.txt` sit at the root, and the end-of-central-directory record is a classic 22-byte footer.
+Send [aether-foundry.xdc](aether-foundry.xdc) into a Vector chat and open it. It is a stored zip with a classic end-of-central-directory record. `index.html` is the minified studio. The readable source is in the same archive: start at `HOW-THE-ENGINE-WORKS.md`, then `src/lib/engine/sim-core.js` and `docs/`. A reviewer does not need the GitHub URL, and does not need each file pasted.
 
 Do not use the repository's Download ZIP button. GitHub wraps the project in a folder and writes a Zip64 archive. Vector's reader answers that with "Could not find EOCD".
 
