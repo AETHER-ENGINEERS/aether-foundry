@@ -29,7 +29,7 @@ The foundry itself:
 - `src/styles.css` — the ink / brass / moss / bone palette the desks use
 - `docs/` — the notes above
 - `LICENSE` — the canonical license text, unaltered
-- `index.html` — the foundry as one page, so this directory can be zipped into a webxdc
+- `aether-foundry.xdc` — the file to open in Vector. Do not rename GitHub's Download ZIP; that archive is Zip64 and Vector reports "Could not find EOCD".
 - `manifest.toml` — the webxdc name and source URL
 - `icon.png` — the mark Vector shows for that package
 - `xdc/` and `build-xdc.mjs` — how `index.html` is produced from the desks. Run `node build-xdc.mjs` after a studio change, from a checkout that can resolve the studio's imports
@@ -38,7 +38,11 @@ The foundry itself:
 
 ## Packaging this directory as a webxdc
 
-`index.html` sits at the top of the repository so the directory can be zipped as a webxdc. Include `index.html`, `manifest.toml`, `icon.png`, and `LICENSE`, and name the archive with a `.xdc` suffix. Open it in Vector and the desks come up. Vector supplies `webxdc.js`; this repository only references it.
+Send [aether-foundry.xdc](aether-foundry.xdc) into a Vector chat and open it. It is a stored zip: `index.html`, `manifest.toml`, `icon.png`, and `LICENSE.txt` sit at the root, and the end-of-central-directory record is a classic 22-byte footer.
+
+Do not use the repository's Download ZIP button. GitHub wraps the project in a folder and writes a Zip64 archive. Vector's reader answers that with "Could not find EOCD".
+
+Vector supplies `webxdc.js`. This repository only references it.
 
 The license text is an HTML comment at the top of `index.html`, the same wording as `LICENSE`. The page also carries React, Zustand, and Lucide inside the script. Those stay under their own terms. This repository does not relicense them.
 

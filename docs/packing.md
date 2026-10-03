@@ -2,7 +2,7 @@
 
 Two different packages:
 
-- **This repository** is the foundry. `index.html` at the top, plus `manifest.toml` and `icon.png`, is a webxdc of the desks. Zip those with `LICENSE` and open the `.xdc` in Vector.
+- **This repository** ships `aether-foundry.xdc`. That file is the desks. Send that file. Do not send GitHub's Download ZIP: it is Zip64, the page is inside a folder, and Vector answers "Could not find EOCD".
 - **The Vector desk** packs the *open engine* into its own smaller `.xdc`. That file is a yard, not the foundry. The desks do not go inside it.
 
 ## The foundry package
