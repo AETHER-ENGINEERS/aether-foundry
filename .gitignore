@@ -1,0 +1,19 @@
+# This repository is the foundry, not the host it currently runs in.
+# Ignore everything, then put back the files other people should read.
+*
+
+!.gitignore
+!LICENSE
+!README.md
+
+!docs/
+!docs/**
+
+!src/
+!src/styles.css
+!src/lib/
+!src/lib/engine/
+!src/lib/engine/**
+!src/components/
+!src/components/studio/
+!src/components/studio/**
