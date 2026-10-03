@@ -29,17 +29,27 @@ The foundry itself:
 - `src/styles.css` — the ink / brass / moss / bone palette the desks use
 - `docs/` — the notes above
 - `LICENSE` — the canonical license text, unaltered
+- `index.html` — the foundry as one page, so this directory can be zipped into a webxdc
+- `manifest.toml` — the webxdc name and source URL
+- `icon.png` — the mark Vector shows for that package
+- `xdc/` and `build-xdc.mjs` — how `index.html` is produced from the desks. Run `node build-xdc.mjs` after a studio change, from a checkout that can resolve the studio's imports
 
-`src/lib/engine/sim-core.js` is the single simulation. The studio imports it. The packed player embeds the same file. If those two ever disagree, that is a bug.
+`src/lib/engine/sim-core.js` is the single simulation. The studio imports it. The root `index.html` bundles that same studio. A packed engine embeds the same step again. If those disagree, that is a bug.
+
+## Packaging this directory as a webxdc
+
+`index.html` sits at the top of the repository so the directory can be zipped as a webxdc. Include `index.html`, `manifest.toml`, `icon.png`, and `LICENSE`, and name the archive with a `.xdc` suffix. Open it in Vector and the desks come up. Vector supplies `webxdc.js`; this repository only references it.
+
+The license text is an HTML comment at the top of `index.html`, the same wording as `LICENSE`. The page also carries React, Zustand, and Lucide inside the script. Those stay under their own terms. This repository does not relicense them.
 
 ## What is not in this repository
 
-The studio currently runs inside a host application (routing, accounts, preview chrome). That host is not this project, and it is not published here. You cannot `npm install` this repository and boot the desks. Read it as the product surface.
+The account gate and preview chrome this studio was written beside are not part of the package. `index.html` does not need them.
 
-Third-party code a host might use (React, a zip the browser already has, a messenger) stays under that code's own terms. This repository does not relicense those works. The license below covers Aether Foundry.
+Third-party code stays under that code's own terms. The license below covers Aether Foundry.
 
 ## License
 
-The full text is [`LICENSE`](LICENSE). It is also in `src/lib/engine/license.ts`, and it is written, unaltered, at the top of every packed engine (`LICENSE.txt` inside the `.xdc`, and an HTML comment at the top of the player page).
+The full text is [`LICENSE`](LICENSE). It is also in `src/lib/engine/license.ts`, and it is written, unaltered, at the top of `index.html` and at the top of every packed engine.
 
 Do not edit that text. If a later timestamp exists on [AETHER-ENGINEERS](https://github.com/AETHER-ENGINEERS/AETHER-ENGINEERS/blob/main/LICENSE) or DarkIlluminatus, that later text wins. This distribution is not an offer of profit or of a proprietary path.

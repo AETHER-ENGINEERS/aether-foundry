@@ -1,8 +1,24 @@
 # Packing and Vector
 
-The Vector desk turns the **open engine** into a webxdc file. The foundry does not go inside it.
+Two different packages:
 
-## The file
+- **This repository** is the foundry. `index.html` at the top, plus `manifest.toml` and `icon.png`, is a webxdc of the desks. Zip those with `LICENSE` and open the `.xdc` in Vector.
+- **The Vector desk** packs the *open engine* into its own smaller `.xdc`. That file is a yard, not the foundry. The desks do not go inside it.
+
+## The foundry package
+
+| entry | what it is |
+| --- | --- |
+| `index.html` | the studio, one page. The license text is an HTML comment at the top, before the doctype. |
+| `manifest.toml` | `name` is Aether Foundry. `source_code_url` is this repository. |
+| `icon.png` | the brass mark. |
+| `LICENSE` | the same text as the comment. |
+
+`webxdc.js` is referenced from `index.html` and is provided by Vector when the file is opened there. It is not stored in the repository. In a normal browser the missing script is a harmless 404, and the desks still run.
+
+`node build-xdc.mjs` rebuilds `index.html` and `icon.png` from `xdc/main.tsx` and the desks. Do that after changing the studio, or the packaged page will be the previous one.
+
+## The engine file
 
 `packEngine` writes a zip of uncompressed entries (stored, not deflated) and downloads it as `<engine-name>.xdc`.
 

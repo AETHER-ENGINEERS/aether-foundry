@@ -14,6 +14,14 @@
 !src/lib/
 !src/lib/engine/
 !src/lib/engine/**
+
 !src/components/
 !src/components/studio/
 !src/components/studio/**
+!build-xdc.mjs
+!index.html
+!manifest.toml
+!icon.png
+
+!xdc/
+!xdc/**

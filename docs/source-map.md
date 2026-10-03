@@ -32,6 +32,16 @@ If you change a condition or an effect, touch `types.ts`, `sim-core.js`, `phrase
 | `src/lib/engine/zip.ts` | a stored-method zip. No compression library. |
 | `src/lib/engine/webxdc.ts` | the small `window.webxdc` surface the desks call: inside-Vector check, file pick, image downscale, base64. |
 
+## The packaged page
+
+| file | role |
+| --- | --- |
+| `xdc/main.tsx` | mounts `Studio` for the webxdc page. No host, no accounts. |
+| `xdc/index.html` | the small page the bundler starts from. Not the file you zip. |
+| `build-xdc.mjs` | writes the root `index.html` and `icon.png`. |
+| `index.html` | the page at the top of the repository. This is what gets zipped. |
+| `manifest.toml` | webxdc name and source URL. |
+
 ## Desks
 
 | file | desk |
