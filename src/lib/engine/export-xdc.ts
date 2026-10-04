@@ -410,6 +410,8 @@ function reviewSlices(sourceName: string, text: string): { name: string; data: U
     line += 1;
   }
   flush();
+  const recovered = groups.map((group) => group.text).join("");
+  if (recovered !== text) throw new Error(`Parts of ${sourceName} do not join back to the file.`);
   const encoder = new TextEncoder();
   return groups.map((group, index) => {
     const n = String(index + 1).padStart(2, "0");
@@ -426,7 +428,9 @@ function reviewSlices(sourceName: string, text: string): { name: string; data: U
       "",
       group.text,
     ].join("\n");
-    return { name: `review/parts/${sourceName}/${n}.txt`, data: encoder.encode(header) };
+    const data = encoder.encode(header);
+    if (data.length > 4000) throw new Error(`review/parts/${sourceName}/${n}.txt is ${data.length} bytes, over the cut.`);
+    return { name: `review/parts/${sourceName}/${n}.txt`, data };
   });
 }
 

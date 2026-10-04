@@ -8,7 +8,7 @@ import tailwindcss from "@tailwindcss/vite";
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)));
 const outDir = resolve(root, ".xdc-build");
-const version = "0.1.5";
+const version = "0.1.6";
 const xdcName = `aether-foundry-${version}.xdc`;
 
 await build({
