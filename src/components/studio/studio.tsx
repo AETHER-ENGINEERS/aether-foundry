@@ -13,6 +13,8 @@ import { Paddock } from "./paddock";
 import { SystemsDesk } from "./systems-desk";
 import { ThingsDesk } from "./things-desk";
 import { VectorDesk } from "./vector-desk";
+import { LookMenu } from "./look-menu";
+import mark from "./mark.jpg";
 
 const DESKS: { id: Desk; label: string; icon: typeof Box }[] = [
   { id: "paddock", label: "Paddock", icon: Sprout },
@@ -67,37 +69,36 @@ export function Studio() {
   return (
     <div className="flex h-dvh flex-col">
       <header className="flex items-center gap-3 border-b border-line px-3 py-2">
-        <span className="relative block size-9 shrink-0" aria-hidden>
-          <span className="absolute top-0 left-0 size-6 rounded-sm bg-brass" />
-          <span className="absolute right-0 bottom-0 size-6 rounded-sm bg-moss" />
-          <span className="absolute top-2 left-2 size-3 bg-ink" />
-        </span>
+        <img src={mark} alt="" width={40} height={40} className="size-10 shrink-0 rounded-md border border-line object-cover" />
         <div className="min-w-0">
           <p className="text-xs tracking-widest text-mute uppercase">Systems first</p>
           <h1 className="truncate font-display text-lg leading-none text-bone">
             Aether <em className="text-brass">Foundry</em>
           </h1>
         </div>
-        <label className="ml-auto min-w-0">
-          <span className="sr-only">Open engine</span>
-          <select
-            className="h-11 max-w-40 rounded-md border border-line bg-ink px-2 text-sm text-bone md:max-w-56"
-            value={engine.id}
-            onChange={(e) => selectEngine(e.target.value)}
-          >
-            {project.engines.map((item) => (
-              <option key={item.id} value={item.id}>
-                {item.name}
-              </option>
-            ))}
-          </select>
-        </label>
+        <div className="ml-auto flex items-center gap-2">
+          <LookMenu />
+          <label className="min-w-0">
+            <span className="sr-only">Open engine</span>
+            <select
+              className="h-11 max-w-40 rounded-md border border-line bg-ink px-2 text-sm text-bone md:max-w-56"
+              value={engine.id}
+              onChange={(e) => selectEngine(e.target.value)}
+            >
+              {project.engines.map((item) => (
+                <option key={item.id} value={item.id}>
+                  {item.name}
+                </option>
+              ))}
+            </select>
+          </label>
+        </div>
       </header>
       {status ? <p className="border-b border-line px-3 py-2 text-sm text-mute">{status}</p> : null}
       {incoming ? (
         <div className="flex flex-wrap items-center gap-2 border-b border-line bg-panel px-3 py-2">
           <p className="text-sm">A peer sent studio laws for {incoming.title}.</p>
-          <button type="button" className="h-11 rounded-md bg-brass px-3 text-sm text-ink" onClick={applyIncoming}>
+          <button type="button" className="h-11 rounded-md bg-brass px-3 text-sm text-on-accent" onClick={applyIncoming}>
             Apply
           </button>
           <button type="button" className="h-11 rounded-md border border-line px-3 text-sm" onClick={dismissIncoming}>
@@ -157,7 +158,7 @@ function DeskButton({
       onClick={() => onSelect(item.id)}
       className={`flex shrink-0 items-center gap-2 rounded-md px-3 text-sm ${
         stacked ? "w-full flex-col gap-1 px-1 py-2" : "h-11"
-      } ${on ? "bg-brass text-ink" : "text-bone"}`}
+      } ${on ? "bg-brass text-on-accent" : "text-bone"}`}
     >
       <Icon className="size-4" />
       {item.label}

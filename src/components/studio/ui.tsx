@@ -44,7 +44,7 @@ export function Btn({
   className = "",
   ...props
 }: ButtonHTMLAttributes<HTMLButtonElement> & { tone?: "brass" | "ghost" }) {
-  const toneClass = tone === "brass" ? "border-brass bg-brass text-ink" : "border-line bg-panel text-bone";
+  const toneClass = tone === "brass" ? "border-brass bg-brass text-on-accent" : "border-line bg-panel text-bone";
   return (
     <button
       {...props}

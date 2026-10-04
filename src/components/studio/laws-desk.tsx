@@ -148,7 +148,7 @@ function FilterChip({ on, label, onClick }: { on: boolean; label: string; onClic
     <button
       type="button"
       onClick={onClick}
-      className={`h-11 shrink-0 rounded-md border px-3 text-sm ${on ? "border-brass bg-brass text-ink" : "border-line text-bone"}`}
+      className={`h-11 shrink-0 rounded-md border px-3 text-sm ${on ? "border-brass bg-brass text-on-accent" : "border-line text-bone"}`}
     >
       {label}
     </button>

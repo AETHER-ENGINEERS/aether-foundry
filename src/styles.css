@@ -1,18 +1,19 @@
 @import "tailwindcss";
 
 @theme {
-  --color-ink: #12140f;
-  --color-panel: #1b1e16;
-  --color-panel-2: #24281e;
-  --color-line: #3a3f32;
-  --color-bone: #e7e2d4;
-  --color-mute: #9a957f;
-  --color-brass: #d7a15f;
-  --color-brass-deep: #a06b32;
-  --color-moss: #7d9a62;
-  --color-moss-deep: #3e5340;
-  --font-sans: "Outfit", ui-sans-serif, system-ui, sans-serif;
-  --font-display: "Fraunces", Palatino, Georgia, serif;
+  --color-ink: #07060a;
+  --color-panel: #110e18;
+  --color-panel-2: #1a1524;
+  --color-line: #322844;
+  --color-bone: #f4eefc;
+  --color-mute: #a396b8;
+  --color-brass: #7c3aed;
+  --color-brass-deep: #4c1d95;
+  --color-moss: #1f7a45;
+  --color-moss-deep: #0f3d24;
+  --color-on-accent: #f7f3ff;
+  --font-sans: ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Iowan Old Style", Palatino, Georgia, serif;
   --radius-sm: 0.375rem;
   --radius-md: 0.75rem;
 }
@@ -32,7 +33,9 @@
   body {
     margin: 0;
     min-height: 100dvh;
-    background: var(--color-ink);
+    background:
+      radial-gradient(900px 420px at 0% -20%, color-mix(in srgb, var(--color-brass) 22%, transparent), transparent 55%),
+      var(--color-ink);
     color: var(--color-bone);
     font-family: var(--font-sans);
   }

@@ -2,7 +2,7 @@
 
 Two different packages:
 
-- **This repository** ships `aether-foundry-<version>.xdc`, for example `aether-foundry-0.1.6.xdc`. That file is the desks. Send that file. The version is part of the name so a review can tell one build from the last. Do not send GitHub's Download ZIP: it is Zip64, the page is inside a folder, and Vector answers "Could not find EOCD".
+- **This repository** ships `aether-foundry-<version>.xdc`, for example `aether-foundry-0.1.7.xdc`. That file is the desks. Send that file. The version is part of the name so a review can tell one build from the last. Do not send GitHub's Download ZIP: it is Zip64, the page is inside a folder, and Vector answers "Could not find EOCD".
 - **The Vector desk** packs the *open engine* into its own smaller `.xdc`. That file is a yard, not the foundry. The desks do not go inside it.
 
 ## The foundry package

@@ -8,7 +8,7 @@ import tailwindcss from "@tailwindcss/vite";
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)));
 const outDir = resolve(root, ".xdc-build");
-const version = "0.1.6";
+const version = "0.1.7";
 const xdcName = `aether-foundry-${version}.xdc`;
 
 await build({
@@ -281,9 +281,9 @@ function zipStore(files) {
 function writeIcon(path) {
   const size = 128;
   const rgba = Buffer.alloc(size * size * 4);
-  const ink = [0x12, 0x14, 0x0f, 0xff];
-  const brass = [0xd7, 0xa1, 0x5f, 0xff];
-  const moss = [0x7d, 0x9a, 0x62, 0xff];
+  const ink = [0x07, 0x06, 0x0a, 0xff];
+  const brass = [0x7c, 0x3a, 0xed, 0xff];
+  const moss = [0x1f, 0x7a, 0x45, 0xff];
   for (let y = 0; y < size; y++) {
     for (let x = 0; x < size; x++) {
       const nx = (x + 0.5) / size;
