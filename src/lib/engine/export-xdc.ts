@@ -3,6 +3,11 @@ import { AETHER_LICENSE } from "./license";
 import type { EngineDef, Project } from "./types";
 import { zipStore } from "./zip";
 
+function tomlQuoted(value: string): string {
+  const safe = value.replace(/[\u0000-\u0008\u000b\u000c\u000e-\u001f]/g, "").replace(/\r?\n/g, " ");
+  return `"${safe.replace(/\\/g, "\\\\").replace(/"/g, '\\"')}"`;
+}
+
 export function slugName(name: string): string {
   const slug = name
     .toLowerCase()
@@ -449,8 +454,7 @@ async function iconPng(): Promise<Uint8Array> {
 export async function packEngine(project: Project, engine: EngineDef): Promise<{ blob: Blob; filename: string; html: string }> {
   const html = renderEngineHtml(project, engine);
   const encoder = new TextEncoder();
-  const safeName = engine.name.replace(/"/g, "'");
-  const manifest = `name = "${safeName}"\nsource_code_url = "https://github.com/AETHER-ENGINEERS/aether-foundry"\n`;
+  const manifest = `name = ${tomlQuoted(engine.name)}\nsource_code_url = "https://github.com/AETHER-ENGINEERS/aether-foundry"\n`;
   const icon = await iconPng();
   const engineJson = JSON.stringify(engineSnapshot(project, engine), null, 2);
   const files: { name: string; data: Uint8Array<ArrayBufferLike> }[] = [

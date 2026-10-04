@@ -40,7 +40,9 @@ function isProject(value: unknown): value is Project {
     Array.isArray(p.terrains) &&
     Array.isArray(p.stats) &&
     Array.isArray(p.systems) &&
-    typeof p.activeEngineId === "string"
+    typeof p.activeEngineId === "string" &&
+    (p.worldLaws == null || Array.isArray(p.worldLaws)) &&
+    (p.assets == null || Array.isArray(p.assets))
   );
 }
 

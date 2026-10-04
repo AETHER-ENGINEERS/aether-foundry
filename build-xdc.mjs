@@ -91,12 +91,18 @@ console.log("wrote index.html", page.length, "bytes");
 console.log("wrote aether-foundry.xdc", xdc.length, "bytes");
 
 function reviewParts(packed) {
+  const showFirst = [
+    "src/lib/engine/zip.ts",
+    "src/lib/engine/export-xdc.ts",
+    "src/lib/engine/draw-yard.ts",
+    "src/components/studio/paddock.tsx",
+  ];
   const parts = [];
   const lines = [];
   for (const file of packed) {
     if (file.name === "index.html" || file.name === "icon.png") continue;
     const text = file.data.toString("utf8");
-    if (Buffer.byteLength(text) < 3500) continue;
+    if (Buffer.byteLength(text) < 3500 && !showFirst.includes(file.name)) continue;
     const slices = sliceText(text, 2600);
     slices.forEach((slice, index) => {
       const n = String(index + 1).padStart(2, "0");
@@ -113,12 +119,19 @@ function reviewParts(packed) {
       ].join("\n");
       const body = Buffer.from(header + slice.text, "utf8");
       if (body.length > 4000) throw new Error(`${name} is ${body.length} bytes, over the cut.`);
-      parts.push({ name, data: body });
+      parts.push({ name, data: body, source: file.name });
       lines.push(`${name}  ${file.name}  lines ${slice.startLine}-${slice.endLine}`);
     });
     const recovered = slices.map((slice) => slice.text).join("");
     if (recovered !== text) throw new Error(`Parts of ${file.name} do not join back to the file.`);
   }
+  parts.sort((a, b) => {
+    const ai = showFirst.indexOf(a.source);
+    const bi = showFirst.indexOf(b.source);
+    const ar = ai === -1 ? showFirst.length : ai;
+    const br = bi === -1 ? showFirst.length : bi;
+    return ar - br || a.name.localeCompare(b.name);
+  });
   const listText = lines.join("\n") + "\n";
   const listSlices = sliceText(listText, 2600);
   const listParts = listSlices.map((slice, index) => {
@@ -127,41 +140,35 @@ function reviewParts(packed) {
     const header = `PART ${index + 1} OF ${listSlices.length}\nSOURCE review/part-list\nThis list is complete in these short files.\n\n`;
     return { name, data: Buffer.from(header + slice.text, "utf8") };
   });
-  const sim = parts.filter((part) => part.name.startsWith("review/parts/src/lib/engine/sim-core.js/")).map((part) => part.name);
-  const store = parts.filter((part) => part.name.startsWith("review/parts/src/lib/engine/store.ts/")).map((part) => part.name);
+  const sim = parts.filter((part) => part.source === "src/lib/engine/sim-core.js").map((part) => part.name);
+  const store = parts.filter((part) => part.source === "src/lib/engine/store.ts").map((part) => part.name);
   if (!sim.length || !store.length) throw new Error("Review parts are missing sim-core.js or store.ts.");
-  const start = Buffer.from(startHere(sim, store, parts.length), "utf8");
+  const first = showFirst.map((source) => {
+    const names = parts.filter((part) => part.source === source).map((part) => part.name);
+    if (!names.length) throw new Error(`Review parts are missing ${source}.`);
+    return `## ${source}\n${names.map((name) => `- ${name}`).join("\n")}`;
+  }).join("\n\n");
+  const start = Buffer.from(startHere(first), "utf8");
   if (start.length > 3500) throw new Error(`Start file is ${start.length} bytes.`);
   for (const part of listParts) {
     if (part.data.length > 4000) throw new Error(`${part.name} is ${part.data.length} bytes.`);
   }
-  return [{ name: "review/00-START-HERE.md", data: start }, ...listParts, ...parts];
+  const packedParts = parts.map(({ name, data }) => ({ name, data }));
+  const lead = packedParts.filter((part) => showFirst.some((source) => part.name.startsWith(`review/parts/${source}/`)));
+  const rest = packedParts.filter((part) => !lead.includes(part));
+  return [{ name: "review/00-START-HERE.md", data: start }, ...lead, ...listParts, ...rest];
 }
 
-function startHere(simParts, storeParts, partCount) {
+function startHere(first) {
   return `# Start here
 
-This file is short on purpose. Some readers keep only the first 4500 bytes of each file in an archive.
+This file is short on purpose. Some readers keep only the first 4500 bytes of a file, and some stop once a budget of files is full. The long copies under src/ may be missing from that read. Do not ask for a paste.
 
-That cut is why sim-core.js arrived as about 133 of 604 lines, and store.ts as about 158 of 533. The long copies under src/ will be cut the same way again. Do not ask for a paste. The complete text is already here, in parts under 4000 bytes.
+Read these four files first. A previous pass could not see them. Join the parts of one SOURCE in order.
 
-Read these, in order. Joined, they are src/lib/engine/sim-core.js:
+${first}
 
-${simParts.map((name) => `- ${name}`).join("\n")}
-
-Joined, these are src/lib/engine/store.ts:
-
-${storeParts.map((name) => `- ${name}`).join("\n")}
-
-${partCount} short parts cover every other long file (seed, laws, docs, desks). Their names are in review/part-list-01.txt and the following part-list files. index.html is the minified studio Vector boots. It is not the source.
-
-## What the cut hid
-
-Line 54 of sim-core.js chooses the arrival cell with hash(tick|lawId|arrive), the same FNV-1a hash a chance roll uses. Two copies of a yard arrive in the same cell. The step does not draw lots.
-
-Chance rolls hash(tick + "|" + entityId + "|" + lawId) % 100 and hit when the roll is under pct. Digging a closed tile does not count as a step, so a later effect in that law still runs. vigor is the reserved death stat. A project that does not define it never kills a body for being spent.
-
-stepWorld clones the yard and adds one to tick. World laws run in list order: skip a system that is off, and on every Nth beat place thingId on passable onTerrain if the living count is under cap. Then each body that already existed runs every matching pulse, then the first matching order that succeeds on a dry run. Orders sort by priority ascending, then by name. The first effect that steps ends that law. vigor at or below 0 kills the body. diagnose tries the orders without writing.
+The step is review/parts/src/lib/engine/sim-core.js/. The store is review/parts/src/lib/engine/store.ts/. What they are required to do is docs/simulation.md in this same archive. index.html is the minified studio Vector boots. It is not the source.
 `;
 }
 
