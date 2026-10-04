@@ -59,7 +59,7 @@ export function Studio() {
 
   useEffect(() => {
     if (!playing) return;
-    const ms = Math.max(70, Math.round(tickMs / speed));
+    const ms = Math.max(70, Math.round(tickMs / speed) || 70);
     const id = window.setInterval(() => useStudio.getState().tickOnce(), ms);
     return () => window.clearInterval(id);
   }, [playing, speed, tickMs]);

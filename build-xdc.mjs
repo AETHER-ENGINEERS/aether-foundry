@@ -8,6 +8,8 @@ import tailwindcss from "@tailwindcss/vite";
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)));
 const outDir = resolve(root, ".xdc-build");
+const version = "0.1.5";
+const xdcName = `aether-foundry-${version}.xdc`;
 
 await build({
   root,
@@ -84,11 +86,12 @@ const packed = [
 ];
 const review = reviewParts(packed);
 const xdc = zipStore([...review, ...packed]);
-const xdcPath = resolve(root, "aether-foundry.xdc");
+const xdcPath = resolve(root, xdcName);
 writeFileSync(xdcPath, xdc);
+rmSync(resolve(root, "aether-foundry.xdc"), { force: true });
 rmSync(outDir, { recursive: true, force: true });
 console.log("wrote index.html", page.length, "bytes");
-console.log("wrote aether-foundry.xdc", xdc.length, "bytes");
+console.log("wrote", xdcName, xdc.length, "bytes");
 
 function reviewParts(packed) {
   const showFirst = [

@@ -28,6 +28,21 @@ export function activeEngine(project: Project): EngineDef {
   return project.engines.find((e) => e.id === project.activeEngineId) ?? project.engines[0];
 }
 
+function isEngine(value: unknown): boolean {
+  if (!value || typeof value !== "object") return false;
+  const engine = value as EngineDef;
+  return (
+    typeof engine.id === "string" &&
+    typeof engine.mapW === "number" &&
+    engine.mapW > 0 &&
+    typeof engine.mapH === "number" &&
+    engine.mapH > 0 &&
+    Array.isArray(engine.tiles) &&
+    Array.isArray(engine.spawns) &&
+    Array.isArray(engine.systemIds)
+  );
+}
+
 function isProject(value: unknown): value is Project {
   if (!value || typeof value !== "object") return false;
   const p = value as Project;
@@ -35,6 +50,7 @@ function isProject(value: unknown): value is Project {
     typeof p.title === "string" &&
     Array.isArray(p.engines) &&
     p.engines.length > 0 &&
+    p.engines.every(isEngine) &&
     Array.isArray(p.things) &&
     Array.isArray(p.mechanics) &&
     Array.isArray(p.terrains) &&

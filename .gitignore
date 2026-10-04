@@ -23,7 +23,7 @@
 !index.html
 !manifest.toml
 !icon.png
-!aether-foundry.xdc
+!aether-foundry-*.xdc
 
 !xdc/
 !xdc/**

@@ -14,6 +14,7 @@ export function bootRuntime(project, engine) {
   (engine.spawns || []).forEach((sp, i) => {
     const thing = thingById(project, sp.thingId);
     if (!thing) return;
+    if (sp.x < 0 || sp.y < 0 || sp.x >= engine.mapW || sp.y >= engine.mapH) return;
     entities.push(makeEntity(project, thing, sp.x, sp.y, "b" + i));
   });
   return {
@@ -33,6 +34,7 @@ export function bootRuntime(project, engine) {
 export function stepWorld(yard, project, engine) {
   const draft = cloneRuntime(yard);
   draft.tick += 1;
+  const ids = draft.entities.map((e) => e.id);
   const enabled = new Set(engine.systemIds || []);
   const mechanics = (project.mechanics || []).filter((m) => enabled.has(m.systemId));
   const pulses = mechanics.filter((m) => m.kind === "pulse");
@@ -55,13 +57,15 @@ export function stepWorld(yard, project, engine) {
     const thing = thingById(project, law.thingId);
     if (!thing) continue;
     draft.entities.push(
-      makeEntity(project, thing, i % draft.w, Math.floor(i / draft.w), "s" + draft.tick + "-" + i),
+      makeEntity(project, thing, i % draft.w, Math.floor(i / draft.w), "s" + draft.tick + "-" + law.id + "-" + i),
     );
     pushLog(draft, "A " + thing.name + " arrived. (" + law.name + ")");
   }
 
-  const ids = draft.entities.map((e) => e.id);
+  const seen = new Set();
   for (const id of ids) {
+    if (seen.has(id)) continue;
+    seen.add(id);
     const entity = draft.entities.find((e) => e.id === id);
     if (!entity || !entity.alive) continue;
     ensureStats(project, entity);
@@ -176,13 +180,17 @@ function startingStats(project, thing) {
 }
 
 function ensureStats(project, entity) {
+  if (!entity.stats || typeof entity.stats !== "object") entity.stats = {};
   for (const def of project.stats || []) {
-    if (typeof entity.stats[def.key] !== "number") entity.stats[def.key] = def.start;
+    if (typeof entity.stats[def.key] !== "number" || Number.isNaN(entity.stats[def.key])) entity.stats[def.key] = def.start;
   }
 }
 
 function clamp(def, value) {
-  return Math.max(def.min, Math.min(def.max, value));
+  const n = typeof value === "number" && !Number.isNaN(value) ? value : 0;
+  const min = typeof def.min === "number" && !Number.isNaN(def.min) ? def.min : n;
+  const max = typeof def.max === "number" && !Number.isNaN(def.max) ? def.max : n;
+  return Math.max(min, Math.min(max, n));
 }
 
 function clampKey(project, key, value) {
@@ -197,12 +205,15 @@ function cloneRuntime(yard) {
     tick: yard.tick,
     w: yard.w,
     h: yard.h,
-    tiles: yard.tiles.slice(),
-    entities: yard.entities.map((e) => ({ ...e, stats: { ...e.stats } })),
-    hoard: yard.hoard,
-    stolen: yard.stolen,
-    left: yard.left,
-    log: yard.log.slice(),
+    tiles: Array.isArray(yard.tiles) ? yard.tiles.slice() : [],
+    entities: (yard.entities || []).map((e) => ({
+      ...e,
+      stats: { ...(e.stats && typeof e.stats === "object" ? e.stats : {}) },
+    })),
+    hoard: yard.hoard || 0,
+    stolen: yard.stolen || 0,
+    left: yard.left || 0,
+    log: Array.isArray(yard.log) ? yard.log.slice() : [],
   };
 }
 
@@ -561,7 +572,8 @@ function vanishIf(yard, project, entity, effect) {
 
 function pushLog(yard, text) {
   if (!yard || typeof yard !== "object") return;
-  yard.log = [...yard.log, { tick: yard.tick, text }].slice(-48);
+  const prev = Array.isArray(yard.log) ? yard.log : [];
+  yard.log = [...prev, { tick: yard.tick, text }].slice(-48);
 }
 
 function nextStep(yard, project, sx, sy, goal, pass) {

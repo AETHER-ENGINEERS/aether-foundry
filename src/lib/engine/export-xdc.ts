@@ -254,7 +254,13 @@ function acceptedYard(next) {
   if (typeof next.w !== "number" || typeof next.h !== "number" || next.w < 1 || next.h < 1) return false;
   if (next.tiles.length !== next.w * next.h) return false;
   if (!Array.isArray(next.log)) return false;
-  for (var i = 0; i < next.entities.length; i++) if (!next.entities[i] || typeof next.entities[i] !== "object") return false;
+  for (var i = 0; i < next.entities.length; i++) {
+    var body = next.entities[i];
+    if (!body || typeof body !== "object" || typeof body.id !== "string") return false;
+    if (typeof body.x !== "number" || typeof body.y !== "number") return false;
+    if (body.x < 0 || body.y < 0 || body.x >= next.w || body.y >= next.h) return false;
+    if (!body.stats || typeof body.stats !== "object") return false;
+  }
   return true;
 }
 function acceptedSpawn(entity) {

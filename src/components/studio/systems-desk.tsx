@@ -76,21 +76,30 @@ export function SystemsDesk() {
               <TextInput
                 type="number"
                 value={stat.min}
-                onChange={(e) => updateStat(stat.key, { min: Number(e.target.value) })}
+                onChange={(e) => {
+                  const n = Number(e.target.value);
+                  if (Number.isFinite(n)) updateStat(stat.key, { min: n });
+                }}
               />
             </Field>
             <Field label="Max">
               <TextInput
                 type="number"
                 value={stat.max}
-                onChange={(e) => updateStat(stat.key, { max: Number(e.target.value) })}
+                onChange={(e) => {
+                  const n = Number(e.target.value);
+                  if (Number.isFinite(n)) updateStat(stat.key, { max: n });
+                }}
               />
             </Field>
             <Field label="Start">
               <TextInput
                 type="number"
                 value={stat.start}
-                onChange={(e) => updateStat(stat.key, { start: Number(e.target.value) })}
+                onChange={(e) => {
+                  const n = Number(e.target.value);
+                  if (Number.isFinite(n)) updateStat(stat.key, { start: n });
+                }}
               />
             </Field>
             <Btn className="self-end" onClick={() => deleteStat(stat.key)} aria-label={`Remove ${stat.label}`}>

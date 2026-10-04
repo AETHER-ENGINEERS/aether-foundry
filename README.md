@@ -30,7 +30,7 @@ The foundry itself:
 - `docs/` — the notes above
 - `LICENSE` — the canonical license text, unaltered
 - `HOW-THE-ENGINE-WORKS.md` — the review map. It ships inside the `.xdc` with the source, so a reader of the archive does not have to open GitHub or paste files.
-- `aether-foundry.xdc` — the file to open in Vector. Do not rename GitHub's Download ZIP; that archive is Zip64 and Vector reports "Could not find EOCD".
+- `aether-foundry-0.1.5.xdc` — the file to open in Vector. The version is in the name. Do not rename GitHub's Download ZIP; that archive is Zip64 and Vector reports "Could not find EOCD".
 - `manifest.toml` — the webxdc name and source URL
 - `icon.png` — the mark Vector shows for that package
 - `xdc/` and `build-xdc.mjs` — how `index.html` is produced from the desks. Run `node build-xdc.mjs` after a studio change, from a checkout that can resolve the studio's imports
@@ -39,7 +39,7 @@ The foundry itself:
 
 ## Packaging this directory as a webxdc
 
-Send [aether-foundry.xdc](aether-foundry.xdc) into a Vector chat and open it. It is a stored zip with a classic end-of-central-directory record. `index.html` is the minified studio. A reader that keeps only the first 4500 bytes of a file will see about 133 lines of `sim-core.js` and about 158 lines of `store.ts`. The rest is in `review/parts/`, in short complete pieces. Start at `review/00-START-HERE.md`.
+Send [aether-foundry-0.1.5.xdc](aether-foundry-0.1.5.xdc) into a Vector chat and open it. It is a stored zip with a classic end-of-central-directory record. `index.html` is the minified studio. A reader that keeps only the first 4500 bytes of a file will see about 133 lines of `sim-core.js` and about 158 lines of `store.ts`. The rest is in `review/parts/`, in short complete pieces. Start at `review/00-START-HERE.md`.
 
 Do not use the repository's Download ZIP button. GitHub wraps the project in a folder and writes a Zip64 archive. Vector's reader answers that with "Could not find EOCD".
 
